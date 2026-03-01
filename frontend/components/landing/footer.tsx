@@ -40,6 +40,12 @@ export function Footer() {
             >
               Dashboard
             </Link>
+            <Link
+              href="/admin"
+              className="text-sm text-white/60 hover:text-white transition-colors"
+            >
+              Admin
+            </Link>
           </nav>
 
           {/* Copyright */}

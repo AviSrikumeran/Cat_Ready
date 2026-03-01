@@ -13,17 +13,18 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <Image 
-              src="/images/cat-logo-black.png" 
-              alt="CAT" 
-              width={60} 
-              height={24}
-              className="h-6 w-auto"
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/images/cat-logo.jpg"
+              alt="CAT"
+              width={40}
+              height={40}
+              className="h-8 w-auto"
             />
-            <span className="font-heading font-black text-xl text-cat-black">
-              Ready
-            </span>
+            <div>
+              <span className="text-cat-yellow font-bold text-lg">CAT</span>
+              <span className="text-cat-black font-bold text-lg ml-1">Ready</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
@@ -39,6 +40,18 @@ export function Header() {
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Features
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/admin"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Admin
             </Link>
             <Link
               href="/inspect"
@@ -79,6 +92,20 @@ export function Header() {
                 onClick={() => setMenuOpen(false)}
               >
                 Features
+              </Link>
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/admin"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                Admin
               </Link>
               <Link
                 href="/inspect"
