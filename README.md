@@ -1,6 +1,6 @@
 # Cat Ready
 
-Voice-first, multimodal pre-op inspection assistant for heavy equipment. Operators walk the machine, speak each check, optionally snap a photo when there’s an issue, and Cat Ready transcribes speech, analyzes images, and returns PASS / FAIL / UNSURE with a summary—built for HackIllinois 2026 in collaboration with Caterpillar.
+Voice-first, multimodal pre-op inspection assistant for heavy equipment. Operators walk the machine, speak each check, optionally snap a photo when there's an issue, and Cat Ready transcribes speech, analyzes images, and returns PASS / FAIL / UNSURE with a summary—built for HackIllinois 2026 in collaboration with Caterpillar.
 
 ---
 
@@ -10,10 +10,10 @@ Voice-first, multimodal pre-op inspection assistant for heavy equipment. Operato
 - **Checklist-driven inspection** – Single product flow (CAT 982 Medium Wheel Loader) based on a daily safety & maintenance checklist: sections A–D with steps for tires, bucket, drivetrain, fluids, cab, engine, etc.
 - **Voice-first capture** – Per-step recording in the browser (microphone). Audio is sent to the backend and transcribed with **OpenAI Whisper** (STT). Optional photos per step for issues; images are described with **OpenAI Vision** and fed into the evaluation.
 - **AI evaluation** – Backend runs STT → vision (for images) → LLM. The LLM maps transcript + image descriptions to **PASS**, **FAIL**, or **UNSURE** with a short reason.
-- **Results & QR** – Results page shows overall status, step-by-step outcomes, and transcript/reason per step. Includes a QR code for the inspection and a “Scan QR code” button (camera) to read QR codes.
-- **Backend API** – Django REST API: create inspection, submit steps (multipart: audio + images), persist steps and media; orchestration (STT, vision, LLM) and CORS for the Next.js frontend.
+- **Results & QR** – Results page shows overall status, step-by-step outcomes, and transcript/reason per step. Includes a QR code for the inspection and a "Scan QR code" button (camera) to read QR codes.
+- **Backend API** – Node.js (Express) REST API: create inspection, submit steps (multipart: audio + images), SQLite persistence, media under `media/`; orchestration (STT, vision, LLM) and CORS for the Next.js frontend.
 
-**Tech:** Django, DRF, OpenAI (Whisper, GPT-4o vision, GPT-4o-mini for evaluation), Next.js 15, Tailwind, Framer Motion, QR display + scanner.
+**Tech:** Node.js, Express, SQLite, OpenAI (Whisper, GPT-4o vision, GPT-4o-mini for evaluation), Next.js 15, Tailwind, Framer Motion, QR display + scanner.
 
 ---
 
@@ -21,7 +21,7 @@ Voice-first, multimodal pre-op inspection assistant for heavy equipment. Operato
 
 | Area | Description |
 |------|-------------|
-| **Backend** | Django app in project root. `inspections/`: models (Inspection, InspectionStep, StepImage), views (REST), services (STT → vision → LLM), `stt.py`, `vision.py`, `llm.py`. Media (audio/images) under `media/`. |
+| **Backend** | Node.js in `backend/`. Express app, SQLite (`db.js`), routes (`routes/inspections.js`), services (STT, vision, LLM, `processStep`). Media (audio/images) under repo root `media/`. |
 | **Frontend** | Next.js in `frontend/`. Landing: `app/page.tsx` + `components/landing/*`. Inspect flow: `app/inspect/page.tsx`, `components/inspect/*` (start, capture, results, QR scanner). Checklist: `lib/checklist.ts`. API client: `lib/api.ts`. |
 | **Checklist source** | `example_checklist.md` describes the CAT 982 daily inspection categories and items. |
 
@@ -29,17 +29,16 @@ Voice-first, multimodal pre-op inspection assistant for heavy equipment. Operato
 
 ## Run locally
 
-### 1. Backend (Django)
+### 1. Backend (Node.js)
 
 From the **project root**:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+cd backend
+npm install
 ```
 
-Create a `.env` in the project root with your OpenAI API key (required for voice and image analysis):
+Create a `.env` in the **project root** (one level up from `backend/`) with your OpenAI API key:
 
 ```bash
 OPENAI_API_KEY=sk-your-key-here
@@ -48,12 +47,12 @@ OPENAI_API_KEY=sk-your-key-here
 Then:
 
 ```bash
-python manage.py migrate
-python manage.py runserver
+npm start
 ```
 
 - API base: **http://localhost:8000**
-- Inspections: `GET/POST /api/inspections/`, `GET /api/inspections/<id>/`, `POST /api/inspections/<id>/steps/`
+- Inspections: `GET/POST /api/inspections/`, `GET /api/inspections/:id/`, `POST /api/inspections/:id/steps/`
+- Database: SQLite at project root `db.sqlite3` (created automatically on first run).
 
 ### 2. Frontend (Next.js)
 
@@ -85,20 +84,19 @@ pnpm dev
 2. Click **Start Inspection** → CAT 982 flow.
 3. For at least one step, allow the microphone when prompted, record a short phrase, then add photos if you like and submit. Results should show transcript and PASS/FAIL/UNSURE.
 
-If transcript is empty, check the Django runserver log for STT messages (e.g. missing `OPENAI_API_KEY` or Whisper errors). Backend logs when it receives audio and when STT is skipped or fails.
+If transcript is empty, check the backend console for STT messages (e.g. missing `OPENAI_API_KEY` or Whisper errors).
 
 ---
 
 ## Testing on another device (same network)
 
-To use the app from a phone or another computer on the same Wi‑Fi:
-
-1. **Get your laptop’s IP** (e.g. System Settings → Network, or `ifconfig` / `ipconfig`). Example: `192.168.1.105`.
+1. **Get your laptop's IP** (e.g. System Settings → Network, or `ifconfig` / `ipconfig`). Example: `192.168.1.105`.
 
 2. **Start the backend** so it accepts connections from other devices:
    ```bash
-   python manage.py runserver 0.0.0.0:8000
+   cd backend && npm start
    ```
+   (The server listens on `0.0.0.0:8000` by default.)
 
 3. **Point the frontend at that IP** in `frontend/.env.local`:
    ```
@@ -106,7 +104,7 @@ To use the app from a phone or another computer on the same Wi‑Fi:
    ```
    (Use your real IP.)
 
-4. **Start the frontend** so it’s reachable on the network:
+4. **Start the frontend** so it's reachable on the network:
    ```bash
    cd frontend && pnpm dev:phone
    ```
@@ -117,32 +115,13 @@ To use the app from a phone or another computer on the same Wi‑Fi:
 
 ---
 
-## Deploy backend to Vercel
-
-The Django backend can be deployed to Vercel (serverless). Use a **separate** Vercel project for the frontend (Root Directory = `frontend`, Next.js preset).
-
-1. **Create a Postgres database** (e.g. [ElephantSQL](https://www.elephantsql.com/)), copy the URL.
-2. **New Vercel project** → Import this repo. Leave Root Directory **empty** (repo root).
-3. **Environment variables** (Vercel project → Settings → Environment Variables):
-   - `DJANGO_SECRET_KEY` – e.g. a random string (Django secret).
-   - `DEBUG` – `False` for production.
-   - `DATABASE_URL` – your Postgres URL (e.g. from ElephantSQL).
-   - `OPENAI_API_KEY` – your OpenAI key (for Whisper/Vision/LLM).
-4. **Node.js version**: Settings → General → Node.js Version → **18.x** (avoids Django import errors on Vercel).
-5. Deploy. Your API will be at `https://<project>.vercel.app/api/` (inspections, etc.).
-
-**Limitations:** Uploaded audio/images are not persistent on Vercel (ephemeral filesystem). For persistent uploads, use external storage (e.g. S3) or host the backend elsewhere (Railway, Render).
-
----
-
 ## Environment variables
 
 | Variable | Where | Purpose |
 |----------|--------|---------|
-| `OPENAI_API_KEY` | Backend `.env` or Vercel | Whisper (STT), Vision, and LLM. Required for voice and image evaluation. |
+| `OPENAI_API_KEY` | Project root `.env` or host | Whisper (STT), Vision, and LLM. Required for voice and image evaluation. |
 | `NEXT_PUBLIC_API_URL` | Frontend `.env.local` or `.env` | Backend API base URL (e.g. `http://localhost:8000/api`). Default used by frontend if unset. |
-| `DATABASE_URL` | Vercel (backend project) | Postgres URL for production. Omit for local (SQLite used). |
-| `DJANGO_SECRET_KEY` | Backend `.env` or Vercel | Django secret. |
-| `DEBUG` | Backend `.env` or Vercel | Set to `False` in production. |
+| `PORT` | Backend | Port for the Node server (default 8000). |
+| `DATABASE_PATH` | Backend | Optional. Path to SQLite file (default: project root `db.sqlite3`). |
 
-Optional backend: `OPENAI_STT_MODEL`, `OPENAI_VISION_MODEL`, `OPENAI_LLM_MODEL`, `ALLOWED_HOSTS`.
+Optional backend (in `.env`): `OPENAI_STT_MODEL`, `OPENAI_VISION_MODEL`, `OPENAI_LLM_MODEL`.

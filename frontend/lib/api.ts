@@ -1,5 +1,5 @@
 /**
- * API client for Cat Ready backend (Django).
+ * API client for Cat Ready backend (Node.js).
  * Base URL: NEXT_PUBLIC_API_URL or http://localhost:8000/api
  */
 
