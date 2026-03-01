@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle, AlertTriangle, XCircle, ArrowRight, RotateCcw, Package, QrCode } from "lucide-react";
+import { CheckCircle, AlertTriangle, XCircle, ArrowRight, RotateCcw, Package, QrCode, ScanLine } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Machine, InspectionResult, getStatusColor, getStatusTextColor } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { QrScannerModal } from "./qr-scanner-modal";
 
 interface InspectionResultsProps {
   machine: Machine;
@@ -15,6 +17,9 @@ interface InspectionResultsProps {
 }
 
 export function InspectionResults({ machine, result, onNewInspection, inspectionId }: InspectionResultsProps) {
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannedContent, setScannedContent] = useState<string | null>(null);
+
   const qrValue = [
     "Cat Ready Inspection",
     `Machine: ${machine.id} - ${machine.name}`,
@@ -201,7 +206,7 @@ export function InspectionResults({ machine, result, onNewInspection, inspection
             </p>
           </div>
 
-          {/* QR Code — scan for inspection summary */}
+          {/* QR Code — share (show code) and scan (open camera) */}
           <div className="bg-white rounded p-4 flex flex-col items-center">
             <div className="flex items-center gap-2 mb-3">
               <QrCode className="h-5 w-5 text-cat-black" />
@@ -219,10 +224,39 @@ export function InspectionResults({ machine, result, onNewInspection, inspection
                 includeMargin={false}
               />
             </div>
+            <button
+              type="button"
+              onClick={() => setScannerOpen(true)}
+              className="mt-3 w-full py-3 px-4 bg-cat-yellow text-cat-black font-bold rounded flex items-center justify-center gap-2 hover:brightness-95 transition-all"
+            >
+              <ScanLine className="h-5 w-5" />
+              Scan QR code
+            </button>
             <p className="text-xs text-muted-foreground mt-2 text-center">
               Scan to view machine, status, and date
             </p>
+            {scannedContent && (
+              <div className="mt-3 w-full p-3 bg-cat-gray rounded border border-border">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Scanned content:</p>
+                <pre className="text-xs text-cat-black whitespace-pre-wrap break-words font-sans">
+                  {scannedContent}
+                </pre>
+                <button
+                  type="button"
+                  onClick={() => setScannedContent(null)}
+                  className="mt-2 text-xs text-cat-red font-medium"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
           </div>
+
+          <QrScannerModal
+            open={scannerOpen}
+            onClose={() => setScannerOpen(false)}
+            onScan={(value) => setScannedContent(value)}
+          />
 
           {/* Actions */}
           <div className="pb-8 space-y-3">
