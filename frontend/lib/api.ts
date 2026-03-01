@@ -66,7 +66,7 @@ export async function submitStep(
   const form = new FormData();
   form.append("step_index", String(stepIndex));
   form.append("step_name", stepName);
-  if (audioBlob) {
+  if (audioBlob && audioBlob.size > 0) {
     form.append("audio", audioBlob, "audio.webm");
   }
   imageFiles.forEach((file, i) => {

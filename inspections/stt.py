@@ -24,6 +24,9 @@ def transcribe(audio_path: str) -> str:
     if not audio_path or not os.path.isfile(audio_path):
         logger.warning("STT skipped: no audio file at %s", audio_path)
         return ""
+    if os.path.getsize(audio_path) == 0:
+        logger.warning("STT skipped: audio file is empty (0 bytes) at %s", audio_path)
+        return ""
     try:
         from openai import OpenAI
 

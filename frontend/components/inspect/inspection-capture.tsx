@@ -54,6 +54,7 @@ export function InspectionCapture({ vehicleName, vehicleId, onComplete, onBack }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
+      const mimeType = recorder.mimeType || "audio/webm";
       chunksRef.current = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size) chunksRef.current.push(e.data);
@@ -61,7 +62,7 @@ export function InspectionCapture({ vehicleName, vehicleId, onComplete, onBack }
       recorder.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
         if (chunksRef.current.length) {
-          const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+          const blob = new Blob(chunksRef.current, { type: mimeType });
           setAudioByStep((prev) => {
             const next = [...prev];
             next[currentStepIndex] = blob;
@@ -69,7 +70,7 @@ export function InspectionCapture({ vehicleName, vehicleId, onComplete, onBack }
           });
         }
       };
-      recorder.start(200);
+      recorder.start(100);
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
     } catch (err) {
@@ -78,8 +79,14 @@ export function InspectionCapture({ vehicleName, vehicleId, onComplete, onBack }
   }, [currentStepIndex]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      try {
+        recorder.requestData();
+      } catch {
+        // ignore if not supported
+      }
+      recorder.stop();
       mediaRecorderRef.current = null;
     }
     setIsRecording(false);

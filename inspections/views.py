@@ -1,6 +1,8 @@
 """
 REST endpoints: inspections and steps (multipart audio + images).
 """
+import logging
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,6 +10,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .models import Inspection, InspectionStep, StepImage
 from .services import process_step
+
+logger = logging.getLogger(__name__)
 
 
 class InspectionListCreateView(APIView):
@@ -115,8 +119,12 @@ class StepCreateView(APIView):
             step_name=step_name,
         )
         if audio_file:
+            size = getattr(audio_file, "size", None)
+            logger.info("Step %s: received audio, size=%s bytes", step_index, size)
             step.audio = audio_file
             step.save(update_fields=["audio"])
+        else:
+            logger.info("Step %s: no audio file in request", step_index)
 
         for img in image_files:
             StepImage.objects.create(step=step, image=img)
