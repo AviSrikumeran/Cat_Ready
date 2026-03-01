@@ -20,6 +20,7 @@ export default function InspectPage() {
   const [step, setStep] = useState<Step>("select");
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
   const [inspectionResult, setInspectionResult] = useState<InspectionResult | null>(null);
+  const [inspectionId, setInspectionId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleMachineSelect = (machine: Machine) => {
@@ -45,6 +46,7 @@ export default function InspectPage() {
       const inspection: InspectionDetail = await getInspection(inspectionId);
       const result = inspectionToResult(inspection, selectedMachine.id);
       setInspectionResult(result as InspectionResult);
+      setInspectionId(inspectionId);
       setStep("results");
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Submission failed.");
@@ -56,6 +58,7 @@ export default function InspectPage() {
     setStep("select");
     setSelectedMachine(null);
     setInspectionResult(null);
+    setInspectionId(null);
     setErrorMessage(null);
   };
 
@@ -84,6 +87,7 @@ export default function InspectPage() {
           machine={selectedMachine}
           result={inspectionResult}
           onNewInspection={handleNewInspection}
+          inspectionId={inspectionId ?? undefined}
         />
       )}
     </div>

@@ -31,3 +31,23 @@ pnpm dev
 ```
 
 App: `http://localhost:3000`. The frontend calls the backend at `NEXT_PUBLIC_API_URL` (default `http://localhost:8000/api`). Run the Django server first so inspections and steps are processed.
+
+## Testing on your phone (same Wi‑Fi)
+
+1. **Backend** – From project root, run:
+   ```bash
+   ./scripts/run-backend-phone.sh
+   ```
+   (Or: `python manage.py runserver 0.0.0.0:8000`.) The script prints your computer’s local IP. In DEBUG mode the backend automatically allows that IP.
+
+2. **Frontend** – In another terminal:
+   ```bash
+   cd frontend
+   cp .env.local.example .env.local
+   ```
+   Edit `frontend/.env.local` and replace `YOUR_LOCAL_IP` with the IP from step 1 (e.g. `192.168.1.42`). Then:
+   ```bash
+   pnpm dev:phone
+   ```
+
+3. **On your phone** – Open in the browser: `http://YOUR_LOCAL_IP:3000` (same IP as in `.env.local`). Use the Inspect flow; camera and mic will use the phone’s hardware.

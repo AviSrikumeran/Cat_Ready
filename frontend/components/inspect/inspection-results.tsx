@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle, AlertTriangle, XCircle, ArrowRight, RotateCcw, Package } from "lucide-react";
+import { CheckCircle, AlertTriangle, XCircle, ArrowRight, RotateCcw, Package, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Machine, InspectionResult, getStatusColor, getStatusTextColor } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -9,9 +10,19 @@ interface InspectionResultsProps {
   machine: Machine;
   result: InspectionResult;
   onNewInspection: () => void;
+  /** Optional inspection ID from backend; encoded in QR for reference */
+  inspectionId?: number;
 }
 
-export function InspectionResults({ machine, result, onNewInspection }: InspectionResultsProps) {
+export function InspectionResults({ machine, result, onNewInspection, inspectionId }: InspectionResultsProps) {
+  const qrValue = [
+    "Cat Ready Inspection",
+    `Machine: ${machine.id} - ${machine.name}`,
+    `Status: ${result.overallStatus.toUpperCase()}`,
+    `Date: ${new Date(result.timestamp).toISOString()}`,
+    result.summary,
+    ...(inspectionId != null ? [`Inspection ID: ${inspectionId}`] : []),
+  ].join("\n");
   const StatusIcon = result.overallStatus === "pass" 
     ? CheckCircle 
     : result.overallStatus === "fail" 
@@ -187,6 +198,29 @@ export function InspectionResults({ machine, result, onNewInspection }: Inspecti
                 minute: "2-digit",
                 hour12: false,
               })}
+            </p>
+          </div>
+
+          {/* QR Code — scan for inspection summary */}
+          <div className="bg-white rounded p-4 flex flex-col items-center">
+            <div className="flex items-center gap-2 mb-3">
+              <QrCode className="h-5 w-5 text-cat-black" />
+              <h2 className="text-sm font-medium text-muted-foreground">
+                Share / Scan for summary
+              </h2>
+            </div>
+            <div className="p-3 bg-white rounded border border-border">
+              <QRCodeSVG
+                value={qrValue}
+                size={160}
+                level="M"
+                bgColor="#FFFFFF"
+                fgColor="#0B0B0B"
+                includeMargin={false}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Scan to view machine, status, and date
             </p>
           </div>
 

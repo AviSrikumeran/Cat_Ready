@@ -16,6 +16,25 @@ DEBUG = os.environ.get("DEBUG", "1").lower() in ("1", "true", "yes")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+
+def _get_local_ip():
+    """Detect primary LAN IP so phone can reach runserver 0.0.0.0 (DEBUG only)."""
+    try:
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return None
+
+
+if DEBUG:
+    _ip = _get_local_ip()
+    if _ip and _ip not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_ip)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
