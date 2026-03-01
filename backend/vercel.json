@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/api" }
+  ],
+  "functions": {
+    "api/[[...path]].js": { "runtime": "nodejs20.x" }
+  }
+}

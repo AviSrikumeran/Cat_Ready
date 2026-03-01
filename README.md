@@ -11,7 +11,7 @@ Voice-first, multimodal pre-op inspection assistant for heavy equipment. Operato
 - **Voice-first capture** – Per-step recording in the browser (microphone). Audio is sent to the backend and transcribed with **OpenAI Whisper** (STT). Optional photos per step for issues; images are described with **OpenAI Vision** and fed into the evaluation.
 - **AI evaluation** – Backend runs STT → vision (for images) → LLM. The LLM maps transcript + image descriptions to **PASS**, **FAIL**, or **UNSURE** with a short reason.
 - **Results & QR** – Results page shows overall status, step-by-step outcomes, and transcript/reason per step. Includes a QR code for the inspection and a "Scan QR code" button (camera) to read QR codes.
-- **Backend API** – Node.js (Express) REST API: create inspection, submit steps (multipart: audio + images), SQLite persistence, media under `media/`; orchestration (STT, vision, LLM) and CORS for the Next.js frontend.
+- **Backend API** – Node.js (Express) REST API: create inspection, submit steps (multipart: audio + images), SQLite persistence, media under `archive/media/`; orchestration (STT, vision, LLM) and CORS for the Next.js frontend.
 
 **Tech:** Node.js, Express, SQLite, OpenAI (Whisper, GPT-4o vision, GPT-4o-mini for evaluation), Next.js 15, Tailwind, Framer Motion, QR display + scanner.
 
@@ -21,7 +21,7 @@ Voice-first, multimodal pre-op inspection assistant for heavy equipment. Operato
 
 | Area | Description |
 |------|-------------|
-| **Backend** | Node.js in `backend/`. Express app, SQLite (`db.js`), routes (`routes/inspections.js`), services (STT, vision, LLM, `processStep`). Media (audio/images) under repo root `media/`. |
+| **Backend** | Node.js in `backend/`. Express app, SQLite (`db.js`), routes (`routes/inspections.js`), services (STT, vision, LLM, `processStep`). Media (audio/images) under `archive/media/`. |
 | **Frontend** | Next.js in `frontend/`. Landing: `app/page.tsx` + `components/landing/*`. Inspect flow: `app/inspect/page.tsx`, `components/inspect/*` (start, capture, results, QR scanner). Checklist: `lib/checklist.ts`. API client: `lib/api.ts`. |
 | **Checklist source** | `example_checklist.md` describes the CAT 982 daily inspection categories and items. |
 

@@ -7,7 +7,7 @@ const { processStep } = require("../services/processStep");
 
 const router = express.Router();
 
-const mediaRoot = path.join(__dirname, "..", "..", "media");
+const mediaRoot = path.join(__dirname, "..", "..", "archive", "media");
 const audioDir = path.join(mediaRoot, "steps", "audio");
 const imagesDir = path.join(mediaRoot, "steps", "images");
 
