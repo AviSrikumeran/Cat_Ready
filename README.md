@@ -117,11 +117,32 @@ To use the app from a phone or another computer on the same Wi‑Fi:
 
 ---
 
+## Deploy backend to Vercel
+
+The Django backend can be deployed to Vercel (serverless). Use a **separate** Vercel project for the frontend (Root Directory = `frontend`, Next.js preset).
+
+1. **Create a Postgres database** (e.g. [ElephantSQL](https://www.elephantsql.com/)), copy the URL.
+2. **New Vercel project** → Import this repo. Leave Root Directory **empty** (repo root).
+3. **Environment variables** (Vercel project → Settings → Environment Variables):
+   - `DJANGO_SECRET_KEY` – e.g. a random string (Django secret).
+   - `DEBUG` – `False` for production.
+   - `DATABASE_URL` – your Postgres URL (e.g. from ElephantSQL).
+   - `OPENAI_API_KEY` – your OpenAI key (for Whisper/Vision/LLM).
+4. **Node.js version**: Settings → General → Node.js Version → **18.x** (avoids Django import errors on Vercel).
+5. Deploy. Your API will be at `https://<project>.vercel.app/api/` (inspections, etc.).
+
+**Limitations:** Uploaded audio/images are not persistent on Vercel (ephemeral filesystem). For persistent uploads, use external storage (e.g. S3) or host the backend elsewhere (Railway, Render).
+
+---
+
 ## Environment variables
 
 | Variable | Where | Purpose |
 |----------|--------|---------|
-| `OPENAI_API_KEY` | Backend `.env` (project root) | Whisper (STT), Vision, and LLM. Required for voice and image evaluation. |
+| `OPENAI_API_KEY` | Backend `.env` or Vercel | Whisper (STT), Vision, and LLM. Required for voice and image evaluation. |
 | `NEXT_PUBLIC_API_URL` | Frontend `.env.local` or `.env` | Backend API base URL (e.g. `http://localhost:8000/api`). Default used by frontend if unset. |
+| `DATABASE_URL` | Vercel (backend project) | Postgres URL for production. Omit for local (SQLite used). |
+| `DJANGO_SECRET_KEY` | Backend `.env` or Vercel | Django secret. |
+| `DEBUG` | Backend `.env` or Vercel | Set to `False` in production. |
 
-Optional backend (in `.env`): `OPENAI_STT_MODEL`, `OPENAI_VISION_MODEL`, `OPENAI_LLM_MODEL`, `DEBUG`, `ALLOWED_HOSTS`.
+Optional backend: `OPENAI_STT_MODEL`, `OPENAI_VISION_MODEL`, `OPENAI_LLM_MODEL`, `ALLOWED_HOSTS`.
